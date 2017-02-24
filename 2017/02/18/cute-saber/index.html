@@ -11,7 +11,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/02/18/cute-saber/index.html">
 <meta property="og:site_name" content="Saberneko's Blog">
 <meta property="og:description" content="前几天在搭建博客的过程中遇到个小问题，想了半天也没想明白，最后在chrome里断点调试才发现。原来是事件冒泡的问题，于是乎记录下来，顺带复习下DOM事件流的相关内容吧。">
-<meta property="og:updated_time" content="2017-02-24T06:45:24.000Z">
+<meta property="og:updated_time" content="2017-02-24T16:17:24.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="DOM事件流">
 <meta name="twitter:description" content="前几天在搭建博客的过程中遇到个小问题，想了半天也没想明白，最后在chrome里断点调试才发现。原来是事件冒泡的问题，于是乎记录下来，顺带复习下DOM事件流的相关内容吧。">
@@ -54,7 +54,7 @@
       </nav>
       <nav id="sub-nav">
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -89,7 +89,11 @@
 <p><strong>如果目标元素同时在事件捕获阶段和事件冒泡阶段被注册，则事件调用顺序遵循事件书写顺序。</strong><a href="https://jsfiddle.net/nekoloke/aobz2m3m/" target="_blank" rel="external">点击查看例子</a>，本栗中先弹出‘123’，后弹出‘inner’。</p>
 <h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>博客移动端左上角的菜单按钮结构如下（实际div#container在div#btn外），点击按钮出现菜单列表，点击按钮或者以外的container区域列表消失。给button和container分别添加事件监听，结果并没有产生期望效果。<a href="https://jsfiddle.net/nekoloke/s14u34px/" target="_blank" rel="external">点击查看例子</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&lt;header id=&quot;contaniner&quot; class=&quot;contaniner&quot;&gt;</div><div class="line">	&lt;nav class=&quot;mobile-nav&quot;&gt;</div><div class="line">		&lt;button id=&quot;btn&quot; class=&quot;dropdown-toggle&quot; type=&quot;button&quot;&gt;菜单&lt;/button&gt;</div><div class="line">		&lt;div class=&quot;dropdown&quot;&gt;</div><div class="line">			&lt;div id=&quot;dropdown-collapse&quot; class=&quot;dropdown-wrapper&quot;&gt;</div><div class="line">				&lt;ul class=&quot;dropdown-menu&quot;&gt;</div><div class="line">					&lt;li&gt;Home&lt;/li&gt;</div><div class="line">					&lt;li&gt;Archives&lt;/li&gt;</div><div class="line">					&lt;li&gt;Tags&lt;/li&gt;</div><div class="line">					&lt;li&gt;About&lt;/li&gt;</div><div class="line">				&lt;/ul&gt;</div><div class="line">			&lt;/div&gt;</div><div class="line">		&lt;/div&gt;</div><div class="line">	&lt;/nav&gt;</div><div class="line">&lt;/header&gt;</div></pre></td></tr></table></figure></p>
 <p>“DOM2级事件”默认冒泡阶段调用事件处理程序（’false’）（addEventListener()第三个参数为一个布尔值，如果为true，表示在捕获阶段调用；如果为false，表示在冒泡阶段调用）。根据DOM事件流，点击按钮，菜单列表本来是要弹出，但是事件在DOM树中向上冒泡到container，container中阻止了菜单弹出。所以看上去按钮绑定事件并没有被接收。这时需要借助事件对象，修补这个问题。</p>
-<h3 id="事件对象"><a href="#事件对象" class="headerlink" title="事件对象"></a>事件对象</h3>     
+<h3 id="事件对象"><a href="#事件对象" class="headerlink" title="事件对象"></a>事件对象</h3><p>事件对象event：在触发DOM上某事件时，会产生一个事件对象event,这个对象包含所有与事件有关的信息。包括导致事件的元素、事件类型以及其他与特定事件相关的信息。DOM0级或DOM2级均可传入event对象。</p>
+<p>event对象包含与创建它的特定事件有关的属性和方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">var btn = document.getElementById(&apos;myBtn&apos;);</div><div class="line">btn.onclick = function(event) &#123;</div><div class="line">	alert(event.type); //click</div><div class="line">&#125;;</div><div class="line">btn.addEventListener(&apos;click&apos;, function(event)&#123;</div><div class="line">	alert(event.type); //click</div><div class="line">&#125;,false);</div></pre></td></tr></table></figure>
+<p>以上两种方法均会弹出警告框，显示event.type属性表示的事件类型。这里借助event对象的stopPropagation()方法，用于阻止事件在捕获或者冒泡阶段传播。所以可以在div#btn的事件处理程序中添加event.stopPropagation(), 阻止点击事件在冒泡阶段传播，div#btn的父元素div#container没有监听到点击事件，绑定的事件处理程序不会被执行，列表菜单可以正常显示。</p>
+     
           
 <!-- 文章页显示 -->
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
@@ -100,20 +104,6 @@
   <hr>
   
     
-<nav id="article-nav">
-  
-    <a href="/2017/02/19/lalal/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">prev</strong>
-      <div class="article-nav-title">
-        
-          la la land
-        
-      </div>
-    </a>
-  
-  
-</nav>
-
   
 </article>
 
