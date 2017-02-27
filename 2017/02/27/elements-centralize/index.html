@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>元素居中 | Saberneko&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="各种元素居中情况整理常见的块级元素(block-level elements)：body、div、p、h1~h6、ul、form、table、header、article、aside、footer、figure、section常见的行内元素(inline elements)：a、span、img、label、input、select、textarea">
+<meta property="og:type" content="article">
+<meta property="og:title" content="元素居中">
+<meta property="og:url" content="http://yoursite.com/2017/02/27/elements-centralize/index.html">
+<meta property="og:site_name" content="Saberneko's Blog">
+<meta property="og:description" content="各种元素居中情况整理常见的块级元素(block-level elements)：body、div、p、h1~h6、ul、form、table、header、article、aside、footer、figure、section常见的行内元素(inline elements)：a、span、img、label、input、select、textarea">
+<meta property="og:updated_time" content="2017-02-27T09:17:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="元素居中">
+<meta name="twitter:description" content="各种元素居中情况整理常见的块级元素(block-level elements)：body、div、p、h1~h6、ul、form、table、header、article、aside、footer、figure、section常见的行内元素(inline elements)：a、span、img、label、input、select、textarea">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <!-- <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css"> -->
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Saberneko&#39;s Blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/tags">Tags</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-elements-centralize" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      元素居中
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          <p>各种元素居中情况整理<br>常见的块级元素(block-level elements)：body、div、p、h1~h6、ul、form、table、header、article、aside、footer、figure、section<br>常见的行内元素(inline elements)：a、span、img、label、input、select、textarea<br><a id="more"></a></p>
+<h3 id="水平居中"><a href="#水平居中" class="headerlink" title="水平居中"></a>水平居中</h3><h5 id="行内元素"><a href="#行内元素" class="headerlink" title="行内元素"></a>行内元素</h5><p>对嵌套行内元素的块级父元素，设置text-align: center<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">div.container&#123;</div><div class="line">	text-align: center;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="块级元素"><a href="#块级元素" class="headerlink" title="块级元素"></a>块级元素</h5><p>对固定宽度的块级元素，设置左右外边距为auto,如margin: 0 auto<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">div.item&#123;</div><div class="line">	margin: 0 auto;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="行内块状元素（inline-block）"><a href="#行内块状元素（inline-block）" class="headerlink" title="行内块状元素（inline-block）"></a>行内块状元素（inline-block）</h5><p>对多个行内块状元素，设置display:inline-block；对其父元素，设置text-align: center<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">div.container&#123;</div><div class="line">	text-align: center;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Tips:如果不想相邻元素之间产生间距可在父元素中设置font-size:0来兼容Chrome和Firefox</p>
+</blockquote>
+<h5 id="弹性盒（Flexible-Box）"><a href="#弹性盒（Flexible-Box）" class="headerlink" title="弹性盒（Flexible Box）"></a>弹性盒（Flexible Box）</h5><p>对父元素，设置display:flex和justify:center<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">div.container&#123;</div><div class="line">	display:flex;</div><div class="line">	justify:center;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="垂直居中"><a href="#垂直居中" class="headerlink" title="垂直居中"></a>垂直居中</h3><h5 id="单行行内元素"><a href="#单行行内元素" class="headerlink" title="单行行内元素"></a>单行行内元素</h5><p>对父元素，设置height和line-height保持一致<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">div.container&#123;</div><div class="line">	height: 50px;</div><div class="line">	line-height: 50px;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="多行行内元素"><a href="#多行行内元素" class="headerlink" title="多行行内元素"></a>多行行内元素</h5><p>对父元素，设置display:table-cell和vertical-align:middle<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">div.container&#123;</div><div class="line">	display:table-cell;</div><div class="line">	vertical-align:middle;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="已知高度的块级元素"><a href="#已知高度的块级元素" class="headerlink" title="已知高度的块级元素"></a>已知高度的块级元素</h5><p>对块级元素设置相对定位position:relative;top:50%;<strong>margin-top:-height/2</strong>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">div.item&#123;</div><div class="line">	position:relative;</div><div class="line">	top:50%;</div><div class="line">	margin-top:-height/2;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>此处用margin注意可能产生外边距塌陷（collapsed margin），解决办法把父元素创建一个新的<a href="https://www.w3.org/TR/CSS22/visuren.html#block-formatting-contexts" target="_blank" rel="external">BFC(Block Formatting Context)</a></p>
+</blockquote>
+<h5 id="未知高度的块级元素"><a href="#未知高度的块级元素" class="headerlink" title="未知高度的块级元素"></a>未知高度的块级元素</h5><p>对块级元素设置相对定位position:relative;top:50%;<strong>transform:translateY(-50%)</strong>;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">	position:relative;</div><div class="line">	top:50%;</div><div class="line">	transform:translateY(-50%);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="水平垂直居中"><a href="#水平垂直居中" class="headerlink" title="水平垂直居中"></a>水平垂直居中</h3><h5 id="单行行内元素（inline）和行内块状元素-inline-block"><a href="#单行行内元素（inline）和行内块状元素-inline-block" class="headerlink" title="单行行内元素（inline）和行内块状元素(inline-block)"></a>单行行内元素（inline）和行内块状元素(inline-block)</h5><p>对行内元素设置text-align:center，line-height与height一样高<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">	text-align:center;</div><div class="line">	line-height: height;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="多行行内元素-inline-和行内块状元素-line-block"><a href="#多行行内元素-inline-和行内块状元素-line-block" class="headerlink" title="多行行内元素(inline)和行内块状元素(line-block)"></a>多行行内元素(inline)和行内块状元素(line-block)</h5><p>对行内元素设置display:table-cell, vertical-align:middle和text-align:center<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">	display:table-cell;</div><div class="line">	vertical-align:middle;</div><div class="line">	text-align:center;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="已知高度、宽度块级元素"><a href="#已知高度、宽度块级元素" class="headerlink" title="已知高度、宽度块级元素"></a>已知高度、宽度块级元素</h5><p>对块级元素设置相对定位，top/left和margin-top/margin-left<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">	position:relative;</div><div class="line">	top:50%;</div><div class="line">	left:50%;</div><div class="line">	margin-top:-height/2;</div><div class="line">	margin-left:-height/2;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="未知高度、宽度的块级元素"><a href="#未知高度、宽度的块级元素" class="headerlink" title="未知高度、宽度的块级元素"></a>未知高度、宽度的块级元素</h5><p>对块级元素设置相对定位，top/left,transform<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">	position:relative;</div><div class="line">	top:50%;</div><div class="line">	left:50%;</div><div class="line">	-webkit-transform: translate(-50%,-50%);</div><div class="line">	-moz-transform: translate(-50%,-50%);</div><div class="line">	transform: translate(-50%,-50%);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h5 id="弹性盒"><a href="#弹性盒" class="headerlink" title="弹性盒"></a>弹性盒</h5><p>对父元素设置justify-content和align-items<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">	display: flex;</div><div class="line">	justify-content: center;</div><div class="line">	align-items: center;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>最后是以上的所有demo<strong><a href="https://jsfiddle.net/nekoloke/o1ufq69c/" target="_blank" rel="external">戳我</a></strong>，包治百病w。</p>
+     
+          
+<!-- 文章页显示 -->
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CSS/">CSS</a></li></ul>
+  
+      
+    </div>
+  </div>
+  <hr>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/02/18/cute-saber/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">next</strong>
+      <div class="article-nav-title">DOM事件流</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+        </section>
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+    	 
+			<a class="footer-link" href="https://github.com/saberneko">
+				<i class="icon icon-github icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://weibo.com/saberneko?is_all=1">
+				<i class="icon icon-weibo icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://www.linkedin.com/in/汝琪-陈-8059a5137/">
+				<i class="icon icon-linkedin icon-2x"></i>
+			</a>
+    	
+    	<p>
+    		&copy; 2017 Saberneko<br>
+      		Propulsé by <a href="http://hexo.io/" target="_blank">Hexo	</a>
+    	</p>
+    </div>
+  </div>
+</footer>
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+
+<div id="dropdown-collapse" class="dropdown-wrapper">
+    <ul class="dropdown-menu">
+      
+        <li><a href="/">Home</a></li>
+      
+        <li><a href="/archives">Archives</a></li>
+      
+        <li><a href="/tags">Tags</a></li>
+      
+        <li><a href="/about">About</a></li>
+      
+    </ul>
+</div>
+
+	
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
