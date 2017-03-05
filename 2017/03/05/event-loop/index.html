@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>深入理解Event Loop | Saberneko&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前段时间看了Philip Roberts的《 What the heck is the event loop anyway? 》演讲，之后又看了一些关于js并发模型的文章。遂整理出来有助于理解js的运行机制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解Event Loop">
+<meta property="og:url" content="http://yoursite.com/2017/03/05/event-loop/index.html">
+<meta property="og:site_name" content="Saberneko's Blog">
+<meta property="og:description" content="前段时间看了Philip Roberts的《 What the heck is the event loop anyway? 》演讲，之后又看了一些关于js并发模型的文章。遂整理出来有助于理解js的运行机制。">
+<meta property="og:updated_time" content="2017-03-05T13:27:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解Event Loop">
+<meta name="twitter:description" content="前段时间看了Philip Roberts的《 What the heck is the event loop anyway? 》演讲，之后又看了一些关于js并发模型的文章。遂整理出来有助于理解js的运行机制。">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <!-- <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css"> -->
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Saberneko&#39;s Blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/tags">Tags</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-event-loop" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      深入理解Event Loop
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          <p>前段时间看了Philip Roberts的《 What the heck is the event loop anyway? 》演讲，之后又看了一些关于js并发模型的文章。遂整理出来有助于理解js的运行机制。<br><a id="more"></a></p>
+<h3 id="Javascript如何执行"><a href="#Javascript如何执行" class="headerlink" title="Javascript如何执行"></a>Javascript如何执行</h3><p>JS引擎在执行Javascript时存在一个调用栈（call stack），所有的任务都在调用栈里执行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function A(a , b)&#123;</div><div class="line">	return a * b;</div><div class="line">&#125;</div><div class="line">function B(m)&#123;</div><div class="line">	var b = m/2;</div><div class="line">	return A(b, b);</div><div class="line">&#125;</div><div class="line">B(m);</div></pre></td></tr></table></figure></p>
+<p>调用B时，B函数进入栈底（包含B的参数和局部变量）。B调用A时，A入栈并位于B之上（包含A的参数和局部变量）。当A返回时，由于栈是后进先出，所以位于最上面的元素先出栈，即A出栈，剩下B。当B返回时，B出栈，此时栈为空。</p>
+<h3 id="同步（synchronous）-amp-异步（asynchronous）"><a href="#同步（synchronous）-amp-异步（asynchronous）" class="headerlink" title="同步（synchronous）&amp;异步（asynchronous）"></a>同步（synchronous）&amp;异步（asynchronous）</h3><p>这样的执行过程会造成一个问题，如果B中存在一个耗时的任务而A绑定了一个点击事件，则A必须等待B执行完了才能执行，也就是说在B执行的过程中，用户点击A是毫无反应的。这种等待前一个任务执行完了才能执行下一个任务的方式叫<strong>同步方式</strong>，也是<strong>Javascript单线程（single thread）</strong>的局限所在，显而易见，这种方式会造成浏览器阻塞。</p>
+<p>为了解决这个问题，可以采用<strong>异步方式</strong>。所谓异步，就是在代码执行期间，给它一个回调函数，不立即进入调用栈而是进入一个等待队列中挂起，这样就可以继续执行后面的任务，当调用栈空闲时再从等待队列中取出任务（回调函数）并执行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">console.log(&apos;hi&apos;);</div><div class="line"></div><div class="line">setTimeout(function()&#123;</div><div class="line">	console.log(&apos;there&apos;);</div><div class="line">&#125;, 1000);</div><div class="line"></div><div class="line">console.log(&apos;everyone&apos;);</div></pre></td></tr></table></figure></p>
+<p>以上代码，打印顺序为hi、everyone、there。为什么there会最后打出？你可能会说因为setTimeout是延迟执行，没错，确实是延迟1s执行，如果改为setTimeout(fn,0)呢？让我们来看看到底发生了什么。</p>
+<h3 id="事件循环（Event-Loop）"><a href="#事件循环（Event-Loop）" class="headerlink" title="事件循环（Event Loop）"></a>事件循环（Event Loop）</h3><p>首先，主线程中console.log(‘hi’)入栈执行，执行完毕控制台打印hi后出栈，然后setTimeout入栈执行，设置一个定时器timer，由于setTimeout是浏览器提供给我们的Web API，它不存在于JS引擎中，属于另外的模块，所以将它交给浏览器的另一个模块去管理并计时（这里我们把它叫做Timer模块），setTimeout暂时完成了它的使命出栈，接着主线程继续向下执行，console.log (‘everyone’)入栈执行，执行完毕控制台打印everyone后出栈。但是并没有结束，当Timer模块计时完成后，由它管理的回调函数不会立即进入调用栈，因为如果这样做的话它会随时出现在主线程正在执行的任务中，所以这时<strong>任务队列（task queue）</strong>就出现了。</p>
+<p>当任何Web API完成它的工作时，会将回调函数推入任务队列，当调用栈空闲时，它会从任务队列取出第一个任务并将其推入调用栈中执行，接着继续检查调用栈和任务队列，随时准备将任务队列中的任务推入调用栈。回到例子中，这里Timer模块完成计时后，打印there的回调函数被推入任务队列中，当调用栈中的任务打印everyone执行完毕出栈后，再进入调用栈执行。再次检查任务队列时已经没有可以执行的回调函数了，到此循环结束。以上就是<strong>事件循环</strong>（Event Loop）。</p>
+<p>总结起来就是，当异步方法执行时（比如setTimeout、ajax请求、DOM事件等），会交由浏览器的其他模块去管理，主线程继续执行后面的任务。当异步方法满足触发条件后，该模块会将方法推入一个任务队列中，当主线程调用栈空闲时（同步任务执行完毕），就会检查任务队列，将任务队列中的第一个任务入栈执行，完毕后继续检查调用栈和任务队列，如此循环。</p>
+<p>比如发起一个Ajax请求，浏览器将其放入另外一个模块，继续执行后面的代码，直到返回响应，回调函数被放入task queue里，主线程空闲时再入栈执行。或许永远不会响应，但是没关系，这并不会妨碍后续代码的执行。</p>
+<h4 id="setTimeout-fn-0-的作用"><a href="#setTimeout-fn-0-的作用" class="headerlink" title="setTimeout(fn,0)的作用"></a>setTimeout(fn,0)的作用</h4><p>那么你可能会问为什么要将延迟设为0呢？延迟0s执行一个函数由什么意义？</p>
+<p>由事件循环可以知道，回调函数不会立即执行，0的作用是会立即进入任务队列，当现有任务（主线程的同步任务和任务队列中的任务）一结束立即执行，所以setTimeout(fn,0)的作用是尽可能早地执行任务，最早也是下一次Event Loop时，但不是立即执行。</p>
+<p>比如它可以调整事件发生顺序，网页中某个事件先发生到子元素，然后冒泡到父元素，即子元素的回调函数先于父元素的回调函数发生。如果我们想让父元素的回调函数先发生，就要用到setTimeout(fn,0)。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">var $btn = document.getElementById(&apos;btn&apos;);</div><div class="line"></div><div class="line">$btn.onclick = function()&#123;</div><div class="line">	setTimeout(function()&#123;</div><div class="line">   alert(&apos;this is input&apos;);</div><div class="line">  &#125;,0);</div><div class="line">&#125;;</div><div class="line"></div><div class="line">document.body.onclick = function() &#123;</div><div class="line">	alert(&apos;this is body&apos;);</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>以上代码，点击btn先触发body上的回调函数，再触发btn上的回调函数。因为setTimeout将回调函数推迟到下一个Event Loop执行了。</p>
+<p>最后一起来看下下面的例子吧<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">setTimeout(function A()&#123;</div><div class="line">    console.log(&apos;A&apos;);</div><div class="line">&#125;,0);</div><div class="line"></div><div class="line">console.log(&quot;start&quot;);</div><div class="line"></div><div class="line">setTimeout(function B() &#123;</div><div class="line">    console.log(&apos;B&apos;);</div><div class="line">&#125;, 4000);</div><div class="line"></div><div class="line"></div><div class="line">setTimeout(function C()&#123;</div><div class="line">    console.log(&quot;C&quot;);</div><div class="line">&#125;,2000);</div><div class="line"></div><div class="line">//假设运行时间大于4s</div><div class="line">for(var i = 0; i&lt;5; i++)&#123;</div><div class="line">    console.log(i)</div><div class="line">&#125;</div><div class="line"></div><div class="line">setTimeout(function D()&#123;</div><div class="line">    console.log(&apos;D&apos;);</div><div class="line">&#125;,1000)</div><div class="line"></div><div class="line">console.log(&quot;end.&quot;);</div></pre></td></tr></table></figure></p>
+<p>A函数最先进入队列，随后主线程执行console.log(“start”),接着B和C进入Timer模块开始计时，主线程继续执行for循环，由于for循环大于4s,使得for循环结束之前C与B就先后进入任务队列，此时队列中的任务依次为A、C、B，for循环结束，D开始计时，接着主线程继续执行console.log(“end.”)，执行完后查看任务队列，等待D计时完毕进入队列后取出执行。具体可查看<strong><a href="http://latentflip.com/loupe/?code=c2V0VGltZW91dChmdW5jdGlvbiBBKCl7CiAgICBjb25zb2xlLmxvZygnQScpOwp9LDApOwoKY29uc29sZS5sb2coInN0YXJ0Iik7CgpzZXRUaW1lb3V0KGZ1bmN0aW9uIEIoKSB7CiAgICBjb25zb2xlLmxvZygnQicpOwp9LCA0MDAwKTsKCgpzZXRUaW1lb3V0KGZ1bmN0aW9uIEMoKXsKICAgIGNvbnNvbGUubG9nKCJDIik7Cn0sMjAwMCk7Cgpmb3IodmFyIGkgPSAwOyBpPDU7IGkrKyl7CiAgICBjb25zb2xlLmxvZyhpKQp9CgpzZXRUaW1lb3V0KGZ1bmN0aW9uIEQoKXsKICAgIGNvbnNvbGUubG9nKCdEJyk7Cn0sMTAwMCkKCmNvbnNvbGUubG9nKCJlbmQuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D" target="_blank" rel="external">这里</a></strong>。</p>
+     
+          
+<!-- 文章页显示 -->
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
+  
+      
+    </div>
+  </div>
+  <hr>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/03/04/border-radius/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">next</strong>
+      <div class="article-nav-title">真正弄懂border-radius及图标制作</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+        </section>
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+    	 
+			<a class="footer-link" href="https://github.com/saberneko">
+				<i class="icon icon-github icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://weibo.com/saberneko?is_all=1">
+				<i class="icon icon-weibo icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://www.linkedin.com/in/汝琪-陈-8059a5137/">
+				<i class="icon icon-linkedin icon-2x"></i>
+			</a>
+    	
+    	<p>
+    		&copy; 2017 Saberneko<br>
+      		Powered by <a href="http://hexo.io/" target="_blank">Hexo	</a>
+    	</p>
+    </div>
+  </div>
+</footer>
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+
+<div id="dropdown-collapse" class="dropdown-wrapper">
+    <ul class="dropdown-menu">
+      
+        <li><a href="/">Home</a></li>
+      
+        <li><a href="/archives">Archives</a></li>
+      
+        <li><a href="/tags">Tags</a></li>
+      
+        <li><a href="/about">About</a></li>
+      
+    </ul>
+</div>
+
+	
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
