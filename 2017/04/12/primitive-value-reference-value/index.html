@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Primitive value &amp; Reference value | Saberneko&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="关于Javascript中的原始值（Primitives）和引用值(References)，很多资料都会提到堆栈。原始值存储在栈内存中，而引用值存储在堆内存中。最近用Vue倒腾毕设的时候发现一个问题，再次理解了下这两个值的区别。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Primitive value & Reference value">
+<meta property="og:url" content="http://yoursite.com/2017/04/12/primitive-value-reference-value/index.html">
+<meta property="og:site_name" content="Saberneko's Blog">
+<meta property="og:description" content="关于Javascript中的原始值（Primitives）和引用值(References)，很多资料都会提到堆栈。原始值存储在栈内存中，而引用值存储在堆内存中。最近用Vue倒腾毕设的时候发现一个问题，再次理解了下这两个值的区别。">
+<meta property="og:image" content="http://yoursite.com/images/action-code-clip.png">
+<meta property="og:image" content="http://yoursite.com/images/action-code-run.png">
+<meta property="og:updated_time" content="2017-04-12T09:13:32.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Primitive value & Reference value">
+<meta name="twitter:description" content="关于Javascript中的原始值（Primitives）和引用值(References)，很多资料都会提到堆栈。原始值存储在栈内存中，而引用值存储在堆内存中。最近用Vue倒腾毕设的时候发现一个问题，再次理解了下这两个值的区别。">
+<meta name="twitter:image" content="http://yoursite.com/images/action-code-clip.png">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <!-- <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css"> -->
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Saberneko&#39;s Blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/tags">Tags</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-primitive-value-reference-value" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Primitive value &amp; Reference value
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          <p>关于Javascript中的原始值（Primitives）和引用值(References)，很多资料都会提到堆栈。原始值存储在栈内存中，而引用值存储在堆内存中。最近用Vue倒腾毕设的时候发现一个问题，再次理解了下这两个值的区别。<br><a id="more"></a></p>
+<h3 id="问题还原"><a href="#问题还原" class="headerlink" title="问题还原"></a>问题还原</h3><p><img src="/images/action-code-clip.png" alt=""><br><img src="/images/action-code-run.png" alt=""><br>代码console.trace()中打印了从state取出的map对象，按照代码运行顺序，一开始map值为空，可以理解Map(0){}。但是当点开旁边的三角箭头发现size为5，并且已经附有值。可是console的代码明明在forEach遍历之前呀？！开始我也感到很奇怪，直到某田同学给我发了篇文章，看完以后似乎有所领悟。<strong><a href="https://javascriptweblog.wordpress.com/2010/09/27/the-secret-life-of-javascript-primitives/" target="_blank" rel="external">The Secret Life of Javascript Primitives</a></strong></p>
+<p>后来又去StackOverflow上看了看，第二个答案很通俗易懂地阐明了两者的区别（还比较了C和Javascript中变量的区别）。<strong><a href="http://stackoverflow.com/questions/13266616/primitive-value-vs-reference-value" target="_blank" rel="external">Primitive value vs Reference value</a></strong> （之后可以尝试翻译一下w）</p>
+<p>总之，当console的时候虽然记录了当时的Map的状态，但是点开三角箭头显示的是整个执行环境下Map的状态（即被forEach遍历后）。Map对象为引用值，存在与堆内存中，在页面运行的时候，可以理解为还没有退出当前执行环境，console保持了对Map对象的引用，所以Map对象没有被垃圾回收。</p>
+     
+          
+<!-- 文章页显示 -->
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
+  
+      
+    </div>
+  </div>
+  <hr>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/03/05/event-loop/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">next</strong>
+      <div class="article-nav-title">深入理解Event Loop</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+        </section>
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+    	 
+			<a class="footer-link" href="https://github.com/saberneko">
+				<i class="icon icon-github icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://weibo.com/saberneko?is_all=1">
+				<i class="icon icon-weibo icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://www.linkedin.com/in/汝琪-陈-8059a5137/">
+				<i class="icon icon-linkedin icon-2x"></i>
+			</a>
+    	
+    	<p>
+    		&copy; 2017 Saberneko<br>
+      		Propulsé by <a href="http://hexo.io/" target="_blank">Hexo	</a>
+    	</p>
+    </div>
+  </div>
+</footer>
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+
+<div id="dropdown-collapse" class="dropdown-wrapper">
+    <ul class="dropdown-menu">
+      
+        <li><a href="/">Home</a></li>
+      
+        <li><a href="/archives">Archives</a></li>
+      
+        <li><a href="/tags">Tags</a></li>
+      
+        <li><a href="/about">About</a></li>
+      
+    </ul>
+</div>
+
+	
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
