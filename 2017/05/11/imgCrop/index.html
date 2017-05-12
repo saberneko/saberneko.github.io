@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>用Canvas来做移动端图片裁剪、上传和下载 | Saberneko&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="将毕设中的头像上传功能单独整理出一个小栗子，基于Vue。完整代码：https://github.com/saberneko/imageCrop-vue本文用到的相关知识：
+
+File相关API（File、FileReader、Blob）
+Canvas
+touch事件
+URL.createObjectURL()">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用Canvas来做移动端图片裁剪、上传和下载">
+<meta property="og:url" content="http://yoursite.com/2017/05/11/imgCrop/index.html">
+<meta property="og:site_name" content="Saberneko's Blog">
+<meta property="og:description" content="将毕设中的头像上传功能单独整理出一个小栗子，基于Vue。完整代码：https://github.com/saberneko/imageCrop-vue本文用到的相关知识：
+
+File相关API（File、FileReader、Blob）
+Canvas
+touch事件
+URL.createObjectURL()">
+<meta property="og:image" content="http://yoursite.com/images/main.png">
+<meta property="og:image" content="http://yoursite.com/images/cover.png">
+<meta property="og:image" content="http://yoursite.com/images/img-crop.png">
+<meta property="og:image" content="http://yoursite.com/images/caniuse-a.png">
+<meta property="og:updated_time" content="2017-05-12T06:08:37.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用Canvas来做移动端图片裁剪、上传和下载">
+<meta name="twitter:description" content="将毕设中的头像上传功能单独整理出一个小栗子，基于Vue。完整代码：https://github.com/saberneko/imageCrop-vue本文用到的相关知识：
+
+File相关API（File、FileReader、Blob）
+Canvas
+touch事件
+URL.createObjectURL()">
+<meta name="twitter:image" content="http://yoursite.com/images/main.png">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <!-- <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css"> -->
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Saberneko&#39;s Blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/tags">Tags</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-imgCrop" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      用Canvas来做移动端图片裁剪、上传和下载
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          <p>将毕设中的头像上传功能单独整理出一个小栗子，基于Vue。完整代码：<a href="https://github.com/saberneko/imageCrop-vue" target="_blank" rel="external">https://github.com/saberneko/imageCrop-vue</a><br>本文用到的相关知识：</p>
+<ul>
+<li>File相关API（File、FileReader、Blob）</li>
+<li>Canvas</li>
+<li>touch事件</li>
+<li>URL.createObjectURL()</li>
+</ul>
+<a id="more"></a>
+<p><img src="/images/main.png" width="400"><br><img src="/images/cover.png" width="300"></p>
+<h2 id="第一步：读取图片"><a href="#第一步：读取图片" class="headerlink" title="第一步：读取图片"></a>第一步：读取图片</h2><p>首先，借用input[type=file]可以获取一个或多个本地文件<strong><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/File" target="_blank" rel="external">File</a></strong>对象，这些File对象被包含在FileList对象中。通过触发input上的change事件可以获取FileList属性(accept属性限定了文件的类型)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;input type=&quot;file&quot; id=&quot;input&quot; accept=&quot;image/*&quot; onchange=&quot;handleFiles(e)&quot;&gt;</div><div class="line">function handleFiles(e) &#123;</div><div class="line">	let file = e.target.files[0] // 获取图片</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>获取图片后将其转化为base64格式，这里用到<strong><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader" target="_blank" rel="external">FileReader</a></strong>对象，FileReader允许异步读取文件,其readAsDataURL()方法读取File对象完成后，如果设置了onload事件处理程序，则调用之，同时,result属性中将包含一个data: URL格式的字符串以表示所读取文件的内容，而image的src属性支持base64格式的图片。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">handleFile (file) &#123;</div><div class="line">    // 读取图片并将图片转为base64</div><div class="line">    let reader = new FileReader()</div><div class="line"></div><div class="line">    reader.onload = function () &#123;</div><div class="line">      imgUrl = this.result</div><div class="line">      panitImg(this.result) // 绘制图片画布</div><div class="line">    &#125;</div><div class="line">    reader.readAsDataURL(file)</div><div class="line">  &#125;</div></pre></td></tr></table></figure></p>
+<h2 id="第二步：绘制图片"><a href="#第二步：绘制图片" class="headerlink" title="第二步：绘制图片"></a>第二步：绘制图片</h2><p>图片转化后，接下来要绘制图片并裁剪。这里将裁剪功能单独放在一个图层中进行，具体结构如下：<br><img src="/images/img-crop.png" width="300"><br><strong>首先绘制图片，思路是新建一个image对象用于加载源图片，判断源图片与裁剪容器的比例(imageScale VS containerScale),源图片与裁剪遮罩的比例（imageScale VS chooseBoxScale），设置图片、裁剪遮罩及裁剪框的宽高，然后用Canvas将图片绘制到图片画布中（imageBox)。</strong></p>
+<blockquote>
+<p>这里需要注意的是canvas.width与css方式的canvas.style.width在绘制图片时有不同，为了防止图片模糊，这里将canvas的宽高设置为计算得到结果的两倍，<strong><a href="http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5" target="_blank" rel="external">具体参考这里</a></strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">// 绘制画布</div><div class="line">panitImg (imgUrl) &#123;</div><div class="line">  let t = this</div><div class="line"></div><div class="line">  if (t.imageBox.getContext) &#123;</div><div class="line">    var ctx = t.imageBox.getContext(&apos;2d&apos;)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  // 清空画布</div><div class="line">  ctx.clearRect(0, 0, this.imageBox.width, this.imageBox.height)</div><div class="line"></div><div class="line">  let img = new Image()</div><div class="line">  img.src = imgUrl</div><div class="line"></div><div class="line">  img.onload = function () &#123;</div><div class="line">    let imgScale = img.width / img.height</div><div class="line">    let boxScale = t.container.offsetWidth / t.container.offsetHeight</div><div class="line"></div><div class="line">    // 判断源图片与裁剪容器的比例， 设置图片</div><div class="line">    if (imgScale &lt; boxScale) &#123;</div><div class="line">    // 源图片为纵向，则高度限制为裁剪容器的高度，宽度根据源图片比例做调整，这样做可以防止图片超出裁剪容器显示，同理横向。</div><div class="line">      t.imgWidth = t.container.offsetHeight * imgScale</div><div class="line">      t.imgHeight = t.container.offsetHeight</div><div class="line">    &#125; else &#123;</div><div class="line">      t.imgWidth = t.container.offsetWidth</div><div class="line">      t.imgHeight = t.container.offsetWidth / imgScale</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 判断源图片与裁剪框的比例，设置裁剪框</div><div class="line">    if (imgScale &lt; t.chooseBoxScale) &#123;</div><div class="line">      // 设置裁剪框宽高</div><div class="line">      t.sWidth = t.imgWidth * (3 / 4)</div><div class="line">      t.sHeight = t.sWidth / t.chooseBoxScale</div><div class="line">      // 设置裁剪框起始位置</div><div class="line">      t.sx = (t.imgWidth - t.sWidth) / 2</div><div class="line">      t.sy = (t.imgHeight - t.sHeight) / 2</div><div class="line">    &#125; else &#123;</div><div class="line">      t.sHeight = t.imgHeight * (3 / 4)</div><div class="line">      t.sWidth = t.sHeight * t.chooseBoxScale</div><div class="line"></div><div class="line">      t.sx = (t.imgWidth - t.sWidth) / 2</div><div class="line">      t.sy = (t.imgHeight - t.sHeight) / 2</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 高分屏下图片模糊需要2倍处理</div><div class="line">    t.imageBox.width = 2 * t.imgWidth</div><div class="line">    t.imageBox.height = 2 * t.imgHeight</div><div class="line">    t.imageBox.style.width = t.imgWidth + &apos;px&apos;</div><div class="line">    t.imageBox.style.height = t.imgHeight + &apos;px&apos;</div><div class="line"></div><div class="line">    // 绘制图片</div><div class="line">    ctx.drawImage(img, 0, 0, 2 * t.imgWidth, 2 * t.imgHeight)</div><div class="line">    // 绘制裁剪遮罩</div><div class="line">    t.paintCover()</div><div class="line">    // 监听裁剪遮罩拖拽</div><div class="line">    t.drag()</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h2 id="第三步：绘制遮罩层"><a href="#第三步：绘制遮罩层" class="headerlink" title="第三步：绘制遮罩层"></a>第三步：绘制遮罩层</h2><p>由于第二步中已经得到了相关数据，直接绘制即可。遮罩层需要完全覆盖图片画布，首先绘制一个大小等于图片画布的矩形，并填充成半透明色，接着挖空裁剪框。(这里也对canvas的宽高做两倍处理)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">// 绘制剪裁遮罩</div><div class="line">paintCover () &#123;</div><div class="line">  let t = this</div><div class="line">  let cover = t.coverBox.getContext(&apos;2d&apos;)</div><div class="line"></div><div class="line">  // 绘制裁剪遮罩</div><div class="line">  t.coverBox.width = 2 * t.imgWidth</div><div class="line">  t.coverBox.height = 2 * t.imgHeight</div><div class="line"></div><div class="line">  t.coverBox.style.display = &apos;block&apos;</div><div class="line">  t.coverBox.style.width = t.imgWidth + &apos;px&apos;</div><div class="line">  t.coverBox.style.height = t.imgHeight + &apos;px&apos;</div><div class="line"></div><div class="line">  cover.fillStyle = &apos;rgba(0, 0, 0, 0.7)&apos;</div><div class="line">  cover.fillRect(0, 0, 2 * t.imgWidth, 2 * t.imgHeight)</div><div class="line">  // 绘制裁剪框</div><div class="line">  cover.clearRect(2 * t.sx, 2 * t.sy, 2 * t.sWidth, 2 * t.sHeight)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="第四步：监听拖拽"><a href="#第四步：监听拖拽" class="headerlink" title="第四步：监听拖拽"></a>第四步：监听拖拽</h2><p>这里用到touch事件，一共有四种touch事件：</p>
+<ul>
+<li>touchstart: 触点与触控板接触时触发</li>
+<li>touchmove: 触点在触控板上移动时触发</li>
+<li>touchend: 触点离开触控板时触发</li>
+<li>touchcancel: 在某些特定的行为中触点被干扰时触发（如多个手指接触触控板造成触点过多）</li>
+</ul>
+<p>由于这里我们设定为单个手指操作，所以只用到touchstart、touchmove和touchend。<strong>通过在控制台打印三种事件event对象发现，其中存在着touches、targetTouches和changedTouches三个touchlist（touchend只有changedTouches）。那么到底用哪一个呢？来看下三者的区别：</strong></p>
+<ul>
+<li>touches: 当前屏幕上所有触点的信息列表。</li>
+<li>targetTouches: 类似touches,不过仅限与在同一个被移动元素节点上的所有触点列表。</li>
+<li>changedTouches:<br>1、 在touchstart中，指的是激活当前触摸事件的触点列表，即手指落在屏幕上时。<br>2、 在targetmove中，指的是上一次移动事件延续到本次移动事件的触点列表。<br>3、 在targetend中，指的是从触控板被移除的触点列表。</li>
+</ul>
+<p>为了更好的理解三者区别，让我们快速地看下以下场景：（<strong><a href="http://stackoverflow.com/questions/7056026/variation-of-e-touches-e-targettouches-and-e-changedtouches" target="_blank" rel="external">参考链接</a></strong>）</p>
+<ul>
+<li>当第一根手指落在屏幕上时，三个touchlist都相同。</li>
+<li>当第二根手指落在屏幕上时，touches包含两个触点信息，每一个对应一根手指。如果第二根手指落在和第一根手指相同的元素节点上时，targetTouches同touches。changedTouches将包含第二根手指信息，因为它激活了当前触摸事件。</li>
+<li>当两根手指同时落在屏幕上，changedTouches中将同时包含两个触点列表。</li>
+<li>当果移动手指，则唯一变化的是changedTouches,包含所有移动触点（这里经过测试，不对三个touchlist都会发生变化）</li>
+<li>当移开一根手指，则相应触点列表会从touches和targetTouches中移除，而仍存在于changedTouches中。</li>
+<li>当移开最后一根手指，只有changedTouches还保留着最后的触点信息。</li>
+</ul>
+<p>根据本篇文章的设定，只要求一根手指控制，由于我们期望在手指移动过程中，裁剪框也跟着移动，这就要求在移动过程中不停地绘制裁剪框<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cover.clearRect(2 * t.sx, 2 * t.sy, 2 * t.sWidth, 2 * t.sHeight)</div></pre></td></tr></table></figure></p>
+<p>根据裁剪框绘制参数，我们需要知道裁剪框每次移动时的坐标。<strong>pageX和pageY可以获取到相对于整个文档的X、Y坐标，如果可以获取到这两个值，那么在手指移动过程中不断的计算本次和上一次移动的pageX(Y)的差值，再加本次移动裁剪框的起始坐标点，就可以重绘裁剪框。从而达到裁剪框随着手指移动的变化而变化的效果。</strong></p>
+<p>综上我们选择使用touches中第一个触点数据的pageX(Y)，即touches[0].pageX(Y)。（如果选择targetTouches[0]和changeTouches[0]在一根手指的情况下也没有问题）。代码逻辑不难，主要是对裁剪框sx、sy坐标的计算以及裁剪框移动到遮罩边缘的限定，不让其移出遮罩范围外。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div></pre></td><td class="code"><pre><div class="line">drag () &#123;</div><div class="line">  let t = this</div><div class="line">  // dragging用来控制拖拽发生</div><div class="line">  let dragging = false</div><div class="line"></div><div class="line">  // 拖拽初始横纵坐标</div><div class="line">  let pageX = 0</div><div class="line">  let pageY = 0</div><div class="line"></div><div class="line">  // 拖拽初始位移</div><div class="line">  let startX = 0</div><div class="line">  let startY = 0</div><div class="line"></div><div class="line">  t.coverBox.addEventListener(&apos;touchstart&apos;, function (event) &#123;</div><div class="line">    // 阻止默认的页面滚动或者缩放行为，保证touchmove正常触发</div><div class="line">    event.preventDefault()</div><div class="line"></div><div class="line">    let e = event.touches[0]</div><div class="line"></div><div class="line">    dragging = true</div><div class="line"></div><div class="line">    pageX = e.pageX</div><div class="line">    pageY = e.pageY</div><div class="line"></div><div class="line">    startX = t.sx</div><div class="line">    startY = t.sy</div><div class="line">  &#125;)</div><div class="line"></div><div class="line">  t.coverBox.addEventListener(&apos;touchmove&apos;, function (event) &#123;</div><div class="line">    let e = event.touches[0]</div><div class="line"></div><div class="line">    let offsetX = e.pageX - pageX</div><div class="line">    let offsetY = e.pageY - pageY</div><div class="line"></div><div class="line">    if (dragging) &#123;</div><div class="line">      t.sx = startX + offsetX</div><div class="line">      t.sy = startY + offsetY</div><div class="line"></div><div class="line">      // 限制裁剪框的范围</div><div class="line">      if (t.sx &lt;= 0 &amp;&amp; t.sy &lt;= 0) &#123;</div><div class="line">        // 移动到遮罩左上角</div><div class="line">        t.sx = 0</div><div class="line">        t.sy = 0</div><div class="line">      &#125; else if (t.sx &gt;= t.imgWidth - t.sWidth &amp;&amp; t.sy &lt;= 0) &#123;</div><div class="line">        // 移动到遮罩右上角</div><div class="line">        t.sx = t.imgWidth - t.sWidth</div><div class="line">        t.sy = 0</div><div class="line">      &#125; else if (t.sx &lt;= 0 &amp;&amp; t.sy &gt;= t.imgHeight - t.sHeight) &#123;</div><div class="line">        // 移动到遮罩左下角</div><div class="line">        t.sx = 0</div><div class="line">        t.sy = t.imgHeight - t.sHeight</div><div class="line">      &#125; else if (t.sx &gt;= t.imgWidth - t.sWidth &amp;&amp; t.sy &gt;= t.imgHeight - t.sHeight) &#123;</div><div class="line">        // 移动到遮罩右下角</div><div class="line">        t.sx = t.imgWidth - t.sWidth</div><div class="line">        t.sy = t.imgHeight - t.sHeight</div><div class="line">      &#125; else if (t.sx &lt;= 0) &#123;</div><div class="line">        // 移动到遮罩左边框</div><div class="line">        t.sx = 0</div><div class="line">      &#125; else if (t.sy &lt;= 0) &#123;</div><div class="line">        // 移动到遮罩上边框</div><div class="line">        t.sy = 0</div><div class="line">      &#125; else if (t.sx &gt;= t.imgWidth - t.sWidth) &#123;</div><div class="line">        // 移动到遮罩右边框</div><div class="line">        t.sx = t.imgWidth - t.sWidth</div><div class="line">      &#125; else if (t.sy &gt;= t.imgHeight - t.sHeight) &#123;</div><div class="line">        // 移动到遮罩下边框</div><div class="line">        t.sy = t.imgHeight - t.sHeight</div><div class="line">      &#125;</div><div class="line">      // 重新绘制遮罩</div><div class="line">      t.paintCover()</div><div class="line">    &#125;</div><div class="line">  &#125;)</div><div class="line"></div><div class="line">  t.coverBox.addEventListener(&apos;touchend&apos;, function (event) &#123;</div><div class="line">    dragging = false</div><div class="line">  &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="第五步：保存图片到预览"><a href="#第五步：保存图片到预览" class="headerlink" title="第五步：保存图片到预览"></a>第五步：保存图片到预览</h2><p>现在我们得到了裁剪框的坐标和宽高，在第一步中我们知道img的src支持base64格式的图片，而<strong><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLCanvasElement/toDataURL" target="_blank" rel="external">HTMLCanvasElement.toDataURL()</a></strong>方法可以将图片转化为base64。因此，我们新建一个画布，将裁剪后的图片通过canvas画出来再进行格式转换。<strong>这里需要注意由于之前我们缩放源图片比例，所以在绘制裁剪图片时需要还原（图片宽（高）比=源图片宽（高）/图片画布宽（高））。</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"> saveImg () &#123;</div><div class="line">   let t = this</div><div class="line">   let saveCanvas = document.createElement(&apos;canvas&apos;)</div><div class="line">   let ctx = saveCanvas.getContext(&apos;2d&apos;)</div><div class="line"></div><div class="line">   saveCanvas.width = 300</div><div class="line">   saveCanvas.height = 300</div><div class="line">// 新建图片用于存放源图片</div><div class="line">   let img = new Image()</div><div class="line">   img.src = t.imgUrl</div><div class="line"></div><div class="line">   img.onload = function () &#123;</div><div class="line">     // 计算缩放尺寸（源图片与图片画布的比例）用于剪裁时还原图片像素</div><div class="line">     let cropWidthScale = img.width / t.imgWidth</div><div class="line">     let cropHeightScale = img.height / t.imgHeight</div><div class="line"></div><div class="line">     ctx.drawImage(img, cropWidthScale * t.sx, cropHeightScale * t.sy,</div><div class="line">       cropWidthScale * t.sWidth, cropHeightScale * t.sHeight, 0, 0, 300, 300)</div><div class="line"></div><div class="line">  // 将图片保存到vue实例中的clipUrl用于更新预览图片</div><div class="line">     t.$vm.clipUrl = saveCanvas.toDataURL()</div><div class="line">   &#125;</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<h2 id="第六步：上传图片"><a href="#第六步：上传图片" class="headerlink" title="第六步：上传图片"></a>第六步：上传图片</h2><p>现在我们取得了裁剪后图片的base64信息，首先对<strong><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/WindowBase64/Base64_encoding_and_decoding" target="_blank" rel="external">base64解码</a></strong>，这里先将图片用window.atob转为二进制格式，直接用window.atob转化会出现乱码，这里需要用TypedArray和UTF-8重新转化一下。<strong><a href="http://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata/15754051" target="_blank" rel="external">参考链接</a></strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">// 将base64格式的图片转为blob</div><div class="line">function convertBase64UrlToBlob (urlData) &#123;</div><div class="line">  // dataURL 的格式为 “data:image/png;base64,****”,逗号之前都是一些说明性的文字，</div><div class="line">  // 我们只需要逗号之后的就行了,并且用window.atob转为二进制</div><div class="line">  let bytes = window.atob(urlData.split(&apos;,&apos;)[1])</div><div class="line">  // 取得图片MIME类型</div><div class="line">  let mimeString = urlData.split(&apos;,&apos;)[0].split(&apos;:&apos;)[1].split(&apos;;&apos;)[0]</div><div class="line">  // 处理异常,将字符串字节转为TypedArray</div><div class="line">  let ia = new Uint8Array(bytes.length)</div><div class="line">  for (var i = 0; i &lt; bytes.length; i++) &#123;</div><div class="line">    ia[i] = bytes.charCodeAt(i)</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  return new Blob([ia], &#123;type: mimeString&#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>转化成<strong><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Blob" target="_blank" rel="external">Blob对象</a></strong>后，新建一个<strong><a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData" target="_blank" rel="external">FormData()对象</a></strong>，借助append方法创建一个file字段，将Blob放进去,通过ajax上传<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function upLoad (urlData, url) &#123;</div><div class="line">  let blob = convertBase64UrlToBlob(urlData)</div><div class="line">  let fd = new FormData()</div><div class="line">  fd.append(&apos;file&apos;, blob)</div><div class="line">&lt;!--   console.log(fd.get(&apos;file&apos;)) --&gt;</div><div class="line">  // ....ajax</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="第七步：下载图片"><a href="#第七步：下载图片" class="headerlink" title="第七步：下载图片"></a>第七步：下载图片</h2><p>HTML5的a标签新增了download属性，该属性存在时，点击链接不会跳转，而是改为下载。目前支持情况(查看资料发现这里还存在跨域问题，具体可查看<strong><a href="http://www.zhangxinxu.com/wordpress/2016/04/know-about-html-download-attribute/" target="_blank" rel="external">参考链接</a></strong>)：<br><img src="/images/caniuse-a.png" width="800"><br>再借助URL.createObjectURL()，它接受的参数为File对象或者Blob对象，可以转化成DataURL格式，类似blob:d3958f5c-0777-0845-9dcf-2cb28783acaf 这样的URL字符串，你可以像使用一个普通URL那样使用它，比如用在a.href上，再结合download属性就可以完成下载图片啦～。<strong><a href="http://www.alloyteam.com/2014/01/use-js-file-download/" target="_blank" rel="external">参考链接</a></strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function downLoad (urlData, fileName) &#123;</div><div class="line">  let aLink = document.createElement(&apos;a&apos;)</div><div class="line">  let blob = convertBase64UrlToBlob(urlData)</div><div class="line"></div><div class="line">  aLink.download = fileName</div><div class="line">  aLink.href = URL.createObjectURL(blob)</div><div class="line">  aLink.click()</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>本文参考文献：<br>1、图片剪切 <a href="https://segmentfault.com/a/1190000008040490" target="_blank" rel="external">https://segmentfault.com/a/1190000008040490</a><br>2、Canvas width and height in HTML5 <a href="http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5" target="_blank" rel="external">http://stackoverflow.com/questions/4938346/canvas-width-and-height-in-html5</a><br>3、<a>标签download属性实现图片下载 <a href="http://www.alloyteam.com/2014/01/use-js-file-download/" target="_blank" rel="external">http://www.alloyteam.com/2014/01/use-js-file-download/</a><br>4、了解HTML/HTML5中的download属性 <a href="http://www.zhangxinxu.com/wordpress/2016/04/know-about-html-download-attribute/" target="_blank" rel="external">http://www.zhangxinxu.com/wordpress/2016/04/know-about-html-download-attribute/</a><br>4、Convert Data URI to File then append to FormData <a href="http://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata" target="_blank" rel="external">http://stackoverflow.com/questions/4998908/convert-data-uri-to-file-then-append-to-formdata</a><br>5、Base64编码与解码 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/WindowBase64/Base64_encoding_and_decoding" target="_blank" rel="external">https://developer.mozilla.org/zh-CN/docs/Web/API/WindowBase64/Base64_encoding_and_decoding</a><br>6、Variation of e.touches, e.targetTouches and e.changedTouches <a href="http://stackoverflow.com/questions/7056026/variation-of-e-touches-e-targettouches-and-e-changedtouches" target="_blank" rel="external">http://stackoverflow.com/questions/7056026/variation-of-e-touches-e-targettouches-and-e-changedtouches</a></a></p>
+     
+          
+<!-- 文章页显示 -->
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/">Vue</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/实践小栗子/">实践小栗子</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/移动端/">移动端</a></li></ul>
+  
+      
+    </div>
+  </div>
+  <hr>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/04/12/primitive-value-reference-value/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">next</strong>
+      <div class="article-nav-title">Primitive value &amp; Reference value</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+        </section>
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+    	 
+			<a class="footer-link" href="https://github.com/saberneko">
+				<i class="icon icon-github icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://weibo.com/saberneko?is_all=1">
+				<i class="icon icon-weibo icon-2x"></i>
+			</a>
+    	 
+			<a class="footer-link" href="http://www.linkedin.com/in/汝琪-陈-8059a5137/">
+				<i class="icon icon-linkedin icon-2x"></i>
+			</a>
+    	
+    	<p>
+    		&copy; 2017 Saberneko<br>
+      		Powered by <a href="http://hexo.io/" target="_blank">Hexo	</a>
+    	</p>
+    </div>
+  </div>
+</footer>
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+
+<div id="dropdown-collapse" class="dropdown-wrapper">
+    <ul class="dropdown-menu">
+      
+        <li><a href="/">Home</a></li>
+      
+        <li><a href="/archives">Archives</a></li>
+      
+        <li><a href="/tags">Tags</a></li>
+      
+        <li><a href="/about">About</a></li>
+      
+    </ul>
+</div>
+
+	
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
